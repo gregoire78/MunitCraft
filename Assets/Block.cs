@@ -2,21 +2,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CreateQuads3 : MonoBehaviour
+public class Block
 {
-    public Material cubeMaterial;
-    public BlockType btype;
+    
     enum Cubeside { BOTTOM, TOP, LEFT, RIGHT, FRONT, BACK };
     public enum BlockType { GRASS, DIRT, STONE };
+    public Material cubeMaterial;
+    public BlockType btype;
+    GameObject parent;
+    Vector3 position;
 
     Vector2[,] blockUVs = {
-        /*GRASS*/      {new Vector2(0.125f,0.375f), new Vector2(0.1875f,0.375f), new Vector2(0.125f, 0.4375f), new Vector2(0.1875f,0.4375f)},
-        /*GRASS SIDE*/ {new Vector2(0.1875f,0.9375f), new Vector2(0.25f,0.9375f), new Vector2(0.1875f, 1.0f), new Vector2(0.25f,1.0f)},
-        /*DIRT*/       {new Vector2(0.125f,0.9375f), new Vector2(0.1875f,0.9375f), new Vector2(0.125f, 1.0f), new Vector2(0.1875f,1.0f)},
-        /*STONE*/      {new Vector2(0, 0.875f), new Vector2(0.0625f,0.875f), new Vector2(0, 0.9375f), new Vector2(0.0625f,0.9375f)}
+        /*GRASS*/{new Vector2(0.125f,0.375f), new Vector2(0.1875f,0.375f), new Vector2(0.125f, 0.4375f), new Vector2(0.1875f,0.4375f)},
+        /*DIRT*/ {new Vector2(0.1875f,0.9375f), new Vector2(0.25f,0.9375f), new Vector2(0.1875f, 1.0f), new Vector2(0.25f,1.0f)},
+        /*STONE*/{new Vector2(0.125f,0.9375f), new Vector2(0.1875f,0.9375f), new Vector2(0.125f, 1.0f), new Vector2(0.1875f,1.0f)},
+                 {new Vector2(0, 0.875f), new Vector2(0.0625f,0.875f), new Vector2(0, 0.9375f), new Vector2(0.0625f,0.9375f)}
     };
 
-
+    public Block(BlockType b, Vector3 pos, GameObject p, Material c)
+    {
+        btype = b;
+        parent = p;
+        position = pos;
+        cubeMaterial = c;
+    }
 
     void CreateQuad(Cubeside side)
     {
@@ -121,38 +130,14 @@ public class CreateQuads3 : MonoBehaviour
         mesh.RecalculateBounds();
 
         GameObject quad = new GameObject("quad");
-        quad.transform.parent = transform;
-        MeshFilter meshFilter = quad.AddComponent<MeshFilter>();
+        quad.transform.position = position;
+        quad.transform.parent = parent.transform;
+
+        MeshFilter meshFilter = (MeshFilter) quad.AddComponent<MeshFilter>();
         meshFilter.mesh = mesh;
     }
 
-    void CombineQuads()
-    {
-        MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
-        CombineInstance[] combine = new CombineInstance[meshFilters.Length];
-
-        for (int i = 0; i < meshFilters.Length; i++)
-        {
-            combine[i].mesh = meshFilters[i].mesh;
-            // transforme les (0.5f, 0.5f, 0.5f) qui sont en local en worldmatrix
-            combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
-        }
-
-        MeshFilter mf = gameObject.AddComponent<MeshFilter>();
-        mf.mesh = new Mesh();
-
-        mf.mesh.CombineMeshes(combine);
-
-        MeshRenderer renderer = gameObject.AddComponent<MeshRenderer>();
-        renderer.material = cubeMaterial;
-
-        for (int i = 0; i < transform.childCount; i++)
-        {
-            Destroy(transform.GetChild(i).gameObject, 0.01f);
-        }
-    }
-
-    void CreateCube()
+    void Draw()
     {
         CreateQuad(Cubeside.FRONT);
         CreateQuad(Cubeside.BACK);
@@ -160,12 +145,5 @@ public class CreateQuads3 : MonoBehaviour
         CreateQuad(Cubeside.BOTTOM);
         CreateQuad(Cubeside.LEFT);
         CreateQuad(Cubeside.RIGHT);
-        CombineQuads();
-    }
-
-    // Use this for initialization
-    void Start()
-    {
-        CreateCube();
     }
 }

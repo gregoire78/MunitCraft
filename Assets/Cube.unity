@@ -284,8 +284,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51d4e3252a4238842bc3ca54fb485c6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubeMaterial: {fileID: 2100000, guid: 168df4606341e4748b6be6087067579d, type: 2}
-  btype: 2
+  cubeMaterial: {fileID: 2100000, guid: 230a131a1bf72494bb6813cfaec2f310, type: 2}
+  btype: 0
 --- !u!4 &1413483618
 Transform:
   m_ObjectHideFlags: 0
