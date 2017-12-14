@@ -133,11 +133,11 @@ public class Block
         quad.transform.position = position;
         quad.transform.parent = parent.transform;
 
-        MeshFilter meshFilter = (MeshFilter) quad.AddComponent<MeshFilter>();
+        MeshFilter meshFilter = quad.AddComponent<MeshFilter>();
         meshFilter.mesh = mesh;
     }
 
-    void Draw()
+    public void Draw()
     {
         CreateQuad(Cubeside.FRONT);
         CreateQuad(Cubeside.BACK);

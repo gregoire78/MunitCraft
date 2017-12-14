@@ -52,11 +52,6 @@ public class Chunk : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
+		StartCoroutine(BuildChunk(4,4,4));
 	}
 }
