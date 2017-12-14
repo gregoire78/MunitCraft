@@ -18,7 +18,10 @@ public class Chunk : MonoBehaviour {
 				for (int x = 0; x < sizeX; x++)
 				{
 					Vector3 pos = new Vector3(x,y,z);
-					chunkData[x,y,z] = new Block(Block.BlockType.DIRT, pos, this.gameObject, cubeMaterial);
+					if (Random.Range(0,100)>75)
+						chunkData[x,y,z] = new Block(Block.BlockType.AIR, pos, this.gameObject, cubeMaterial);
+					else
+						chunkData[x,y,z] = new Block(Block.BlockType.DIRT, pos, this.gameObject, cubeMaterial);
 				}
 			}
 		}

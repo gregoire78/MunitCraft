@@ -6,7 +6,7 @@ public class Block
 {
 
     enum Cubeside { BOTTOM, TOP, LEFT, RIGHT, FRONT, BACK };
-    public enum BlockType { GRASS, DIRT, STONE };
+    public enum BlockType { GRASS, DIRT, STONE, AIR };
     public Material cubeMaterial;
     public BlockType btype;
     GameObject parent;
@@ -14,10 +14,10 @@ public class Block
     public bool isSolid;
 
     Vector2[,] blockUVs = {
-        /*GRASS*/{new Vector2(0.125f,0.375f), new Vector2(0.1875f,0.375f), new Vector2(0.125f, 0.4375f), new Vector2(0.1875f,0.4375f)},
-        /*DIRT*/ {new Vector2(0.1875f,0.9375f), new Vector2(0.25f,0.9375f), new Vector2(0.1875f, 1.0f), new Vector2(0.25f,1.0f)},
-        /*STONE*/{new Vector2(0.125f,0.9375f), new Vector2(0.1875f,0.9375f), new Vector2(0.125f, 1.0f), new Vector2(0.1875f,1.0f)},
-                 {new Vector2(0, 0.875f), new Vector2(0.0625f,0.875f), new Vector2(0, 0.9375f), new Vector2(0.0625f,0.9375f)}
+        /*GRASS*/      {new Vector2(0.125f,0.375f), new Vector2(0.1875f,0.375f), new Vector2(0.125f, 0.4375f), new Vector2(0.1875f,0.4375f)},
+        /*GRASS SIDE*/ {new Vector2(0.1875f,0.9375f), new Vector2(0.25f,0.9375f), new Vector2(0.1875f, 1.0f), new Vector2(0.25f,1.0f)},
+        /*DIRT*/       {new Vector2(0.125f,0.9375f), new Vector2(0.1875f,0.9375f), new Vector2(0.125f, 1.0f), new Vector2(0.1875f,1.0f)},
+        /*STONE*/      {new Vector2(0, 0.875f), new Vector2(0.0625f,0.875f), new Vector2(0, 0.9375f), new Vector2(0.0625f,0.9375f)}
     };
 
     public Block(BlockType b, Vector3 pos, GameObject p, Material c)
@@ -26,7 +26,7 @@ public class Block
         parent = p;
         position = pos;
         cubeMaterial = c;
-        isSolid = true;
+        isSolid = !(b == BlockType.AIR);
     }
 
     void CreateQuad(Cubeside side)
@@ -150,6 +150,7 @@ public class Block
 
     public void Draw()
     {
+        if(btype == BlockType.AIR) return;
         if (!HasSolidNeighbour((int)position.x, (int)position.y, (int)position.z + 1))
             CreateQuad(Cubeside.FRONT);
         if (!HasSolidNeighbour((int)position.x, (int)position.y, (int)position.z - 1))
