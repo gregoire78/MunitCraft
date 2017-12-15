@@ -7,7 +7,13 @@ public class Utils
     static int maxHeight = 150;
     static float smooth = 0.01f;
     static int octaves = 3;
-    static float persistence = 0.3f;
+    static float persistence = 0.1f;
+
+    public static int GenerateStoneHeight(float x, float z)
+    {
+        float height = Mathf.Lerp(0, maxHeight - 20, fBM(x * smooth / 2, z * smooth / 2, octaves, persistence * 2));
+        return (int)height;
+    }
 
     public static int GenerateHeight(float x, float z)
     {
