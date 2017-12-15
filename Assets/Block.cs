@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class Block
 {
-
     enum Cubeside { BOTTOM, TOP, LEFT, RIGHT, FRONT, BACK };
     public enum BlockType { GRASS, DIRT, STONE, AIR };
-    public Material cubeMaterial;
-    public BlockType btype;
+
+    BlockType bType;
+    public bool isSolid;
+    Chunk owner;
     GameObject parent;
     Vector3 position;
-    public bool isSolid;
 
     Vector2[,] blockUVs = {
         /*GRASS*/      {new Vector2(0.125f,0.375f),   new Vector2(0.1875f,0.375f),  new Vector2(0.125f, 0.4375f), new Vector2(0.1875f,0.4375f)},
@@ -20,13 +20,16 @@ public class Block
         /*STONE*/      {new Vector2(0, 0.875f),       new Vector2(0.0625f,0.875f),  new Vector2(0, 0.9375f),      new Vector2(0.0625f,0.9375f)}
     };
 
-    public Block(BlockType b, Vector3 pos, GameObject p, Material c)
+    public Block(BlockType b, Vector3 pos, GameObject p, Chunk o)
     {
-        btype = b;
+        bType = b;
+        owner = o;
         parent = p;
         position = pos;
-        cubeMaterial = c;
-        isSolid = !(b == BlockType.AIR);
+        if (bType == BlockType.AIR)
+            isSolid = false;
+        else
+            isSolid = true;
     }
 
     void CreateQuad(Cubeside side)
@@ -45,21 +48,21 @@ public class Block
         Vector2 uv01;
         Vector2 uv11;
 
-        if (btype == BlockType.GRASS && side == Cubeside.TOP)
+        if (bType == BlockType.GRASS && side == Cubeside.TOP)
         {
             uv00 = blockUVs[0, 0];
             uv10 = blockUVs[0, 1];
             uv01 = blockUVs[0, 2];
             uv11 = blockUVs[0, 3];
         }
-        else if ((btype == BlockType.GRASS && side == Cubeside.BOTTOM) || btype == BlockType.DIRT)
+        else if ((bType == BlockType.GRASS && side == Cubeside.BOTTOM) || bType == BlockType.DIRT)
         {
             uv00 = blockUVs[2, 0];
             uv10 = blockUVs[2, 1];
             uv01 = blockUVs[2, 2];
             uv11 = blockUVs[2, 3];
         }
-        else if (btype == BlockType.GRASS)
+        else if (bType == BlockType.GRASS)
         {
             uv00 = blockUVs[1, 0];
             uv10 = blockUVs[1, 1];
@@ -139,18 +142,53 @@ public class Block
         meshFilter.mesh = mesh;
     }
 
-    public bool HasSolidNeighbour(int x, int y, int z){
-        Block[,,] chunks = parent.GetComponent<Chunk>().chunkData;
-        try{
-            return chunks[x,y,z].isSolid;
+    int ConvertBlockIndexToLocal(int i)
+    {
+        if (i == -1)
+            i = World.chunkSize - 1;
+        else if (i == World.chunkSize)
+            i = 0;
+        return i;
+    }
+
+    public bool HasSolidNeighbour(int x, int y, int z)
+    {
+        Block[,,] chunks;
+
+        if (x < 0 || x >= World.chunkSize || y < 0 || y >= World.chunkSize || z < 0 || z >= World.chunkSize)
+        {  //block in a neighbouring chunk
+
+            Vector3 neighbourChunkPos = this.parent.transform.position + new Vector3((x - (int)position.x) * World.chunkSize, (y - (int)position.y) * World.chunkSize, (z - (int)position.z) * World.chunkSize);
+            string nName = World.BuildChunkName(neighbourChunkPos);
+
+            x = ConvertBlockIndexToLocal(x);
+            y = ConvertBlockIndexToLocal(y);
+            z = ConvertBlockIndexToLocal(z);
+
+            Chunk nChunk;
+            if (World.chunks.TryGetValue(nName, out nChunk))
+            {
+                chunks = nChunk.chunkData;
+            }
+            else
+                return false;
+        }  //block in this chunk
+        else
+            chunks = owner.chunkData;
+
+        try
+        {
+            return chunks[x, y, z].isSolid;
         }
-        catch(System.IndexOutOfRangeException ex){}
+        catch (System.IndexOutOfRangeException) { }
+
         return false;
+
     }
 
     public void Draw()
     {
-        if(btype == BlockType.AIR) return;
+        if (bType == BlockType.AIR) return;
         if (!HasSolidNeighbour((int)position.x, (int)position.y, (int)position.z + 1))
             CreateQuad(Cubeside.FRONT);
         if (!HasSolidNeighbour((int)position.x, (int)position.y, (int)position.z - 1))
